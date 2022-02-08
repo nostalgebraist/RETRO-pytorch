@@ -10,6 +10,8 @@ from einops import rearrange
 import faiss
 from autofaiss import build_index
 
+from tqdm.auto import tqdm
+
 from retro_pytorch.utils import memmap, reset_folder_
 
 # constants
