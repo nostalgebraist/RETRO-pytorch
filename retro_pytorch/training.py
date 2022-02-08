@@ -198,7 +198,8 @@ class TrainingWrapper(nn.Module):
             seq_len = retro.seq_len,
             chunk_memmap_path = chunks_memmap_path,
             chunk_nn_memmap_path = knn_memmap_path,
-            seq_memmap_path = seqs_memmap_path
+            seq_memmap_path = seqs_memmap_path,
+            pad_id = retro.pad_id
         )
 
         # params needed for generation
