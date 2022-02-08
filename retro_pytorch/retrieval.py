@@ -50,7 +50,7 @@ TOKENIZER = None
 
 
 def model_name(use_gpt=True):
-    return 'gpt' if use_gpt else 'bert-base-cased'
+    return 'gpt2' if use_gpt else 'bert-base-cased'
 
 
 def get_tokenizer(use_gpt=True):
