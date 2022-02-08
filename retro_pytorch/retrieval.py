@@ -46,25 +46,30 @@ def faiss_read_index(path):
 MODEL = None
 TOKENIZER = None
 
-def get_tokenizer():
+
+def model_name(use_gpt=False):
+    return 'gpt' if use_gpt else 'bert-base-cased'
+
+
+def get_tokenizer(use_gpt=False):
     global TOKENIZER
     if not exists(TOKENIZER):
-        TOKENIZER = torch.hub.load('huggingface/pytorch-transformers', 'tokenizer', 'bert-base-cased')
+        TOKENIZER = torch.hub.load('huggingface/pytorch-transformers', 'tokenizer', model_name(use_gpt))
     return TOKENIZER
 
-def get_bert():
+def get_bert(use_gpt=False):
     global MODEL
     if not exists(MODEL):
-        MODEL = torch.hub.load('huggingface/pytorch-transformers', 'model', 'bert-base-cased')
+        MODEL = torch.hub.load('huggingface/pytorch-transformers', 'model', model_name(use_gpt))
     return MODEL
 
 # tokenize
 
-def tokenize(texts, add_special_tokens = True):
+def tokenize(texts, add_special_tokens = True, use_gpt=False):
     if not isinstance(texts, (list, tuple)):
         texts = [texts]
 
-    tokenizer = get_tokenizer()
+    tokenizer = get_tokenizer(use_gpt)
 
     encoding = tokenizer.batch_encode_plus(
         texts,
@@ -83,11 +88,12 @@ def doc_text_to_chunks_and_seq_indices(
     doc_text,
     chunk_size = 64,
     seq_len = 2048,
-    pad_id = 0
+    pad_id = 0,
+    use_gpt = False
 ):
     assert (seq_len % chunk_size) == 0, 'sequence length must be divisible by chunk size'
 
-    ids = tokenize(doc_text)
+    ids = tokenize(doc_text, use_gpt=use_gpt)
     ids = rearrange(ids, '1 ... -> ...')
 
     text_len = ids.shape[-1]
@@ -183,9 +189,10 @@ def bert_embed(
     token_ids,
     return_cls_repr = False,
     eps = 1e-8,
-    pad_id = 0.
+    pad_id = 0.,
+    use_gpt=False
 ):
-    model = get_bert()
+    model = get_bert(use_gpt)
     mask = token_ids != pad_id
 
     outputs = model(
@@ -221,7 +228,8 @@ def chunks_to_embeddings_(
     embed_dim = BERT_MODEL_DIM,
     batch_size = 16,
     use_cls_repr = False,
-    pad_id = 0.
+    pad_id = 0.,
+    use_gpt=False,
 ):
     chunks_shape = (num_chunks, chunk_size + 1)
     embed_shape = (num_chunks, embed_dim)
@@ -241,7 +249,8 @@ def chunks_to_embeddings_(
 
             batch_embed = bert_embed(
                 batch_chunk,
-                return_cls_repr = use_cls_repr
+                return_cls_repr = use_cls_repr,
+                use_gpt = use_gpt
             )
 
             embeddings[dim_slice] = batch_embed.detach().cpu().numpy()
@@ -304,6 +313,7 @@ def chunks_to_index_and_embed(
     chunks_to_embeddings_batch_size = 16,
     embed_dim = BERT_MODEL_DIM,
     index_file = 'knn.index',
+    use_gpt = False
     **index_kwargs
 ):
     embedding_path = f'{chunk_memmap_path}.embedded'
@@ -316,7 +326,8 @@ def chunks_to_index_and_embed(
         embeddings_memmap_path = embedding_path,
         use_cls_repr = use_cls_repr,
         batch_size = chunks_to_embeddings_batch_size,
-        embed_dim = embed_dim
+        embed_dim = embed_dim,
+        use_gpt = use_gpt
     )
 
     memmap_file_to_chunks_(
@@ -350,6 +361,7 @@ def chunks_to_precalculated_knn_(
     num_extra_neighbors = 10,
     force_reprocess = False,
     index_file = 'knn.index',
+    use_gpt = False,
     **index_kwargs
 ):
     chunk_path = Path(chunk_memmap_path)
@@ -371,6 +383,7 @@ def chunks_to_precalculated_knn_(
         chunk_size = chunk_size,
         chunk_memmap_path = chunk_memmap_path,
         index_file = index_file,
+        use_gpt = use_gpt
         **index_kwargs
     )
 
