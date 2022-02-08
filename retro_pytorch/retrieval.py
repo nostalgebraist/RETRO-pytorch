@@ -64,7 +64,7 @@ def get_tokenizer(use_gpt=True):
 def get_bert(use_gpt=True):
     global MODEL
     if not exists(MODEL):
-        MODEL = torch.hub.load('huggingface/pytorch-transformers', 'model', model_name(use_gpt))
+        MODEL = torch.hub.load('huggingface/pytorch-transformers', 'model', model_name(use_gpt)).cuda()
     return MODEL
 
 # tokenize
@@ -82,7 +82,7 @@ def tokenize(texts, add_special_tokens = True, use_gpt=True):
         return_tensors = 'pt'
     )
 
-    token_ids = encoding.input_ids
+    token_ids = encoding.input_ids.cuda()
     return token_ids
 
 # text to chunks
