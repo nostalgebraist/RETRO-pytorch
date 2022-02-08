@@ -57,6 +57,8 @@ def get_tokenizer(use_gpt=True):
     global TOKENIZER
     if not exists(TOKENIZER):
         TOKENIZER = torch.hub.load('huggingface/pytorch-transformers', 'tokenizer', model_name(use_gpt))
+    if use_gpt:
+        TOKENIZER.add_special_tokens({"pad_token": TOKENIZER.tokenize(" SolidGoldMagikarp")[0]})
     return TOKENIZER
 
 def get_bert(use_gpt=True):
