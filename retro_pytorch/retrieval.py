@@ -82,7 +82,7 @@ def tokenize(texts, add_special_tokens = True, use_gpt=True):
         return_tensors = 'pt'
     )
 
-    token_ids = encoding.input_ids.cuda()
+    token_ids = encoding.input_ids
     return token_ids
 
 # text to chunks
@@ -200,7 +200,7 @@ def bert_embed(
     mask = token_ids != pad_id
 
     outputs = model(
-        input_ids = token_ids,
+        input_ids = token_ids.cuda(),
         attention_mask = mask,
         output_hidden_states = True
     )
