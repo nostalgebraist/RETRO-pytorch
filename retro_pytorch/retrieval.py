@@ -149,22 +149,26 @@ def text_folder_to_chunks_(
         for path in paths:
             print(f'processing {path}')
 
-            chunks, seq = doc_text_to_chunks_and_seq_indices(
-                doc_text = path.read_text(),
-                chunk_size = chunk_size,
-                seq_len = seq_len
-            )
+            file_text = path.read_text()
+            doc_iterator = [d for d in file_text.split('<|endoftext|>') if len(d) > 0]
 
-            doc_chunk_len = chunks.shape[0]
-            doc_seq_len = seq.shape[0]
+            for doc_text in tqdm(doc_iterator):
+                chunks, seq = doc_text_to_chunks_and_seq_indices(
+                    doc_text = doc_text,
+                    chunk_size = chunk_size,
+                    seq_len = seq_len
+                )
 
-            chunks_memmap[total_chunks:(total_chunks + doc_chunk_len)] = chunks.numpy()
-            seqs_memmap[total_seqs:(total_seqs + doc_seq_len)] = seq.numpy() + total_chunks
-            doc_ids_memmap[total_chunks:(total_chunks + doc_chunk_len)] = np.full((doc_chunk_len,), total_docs)
+                doc_chunk_len = chunks.shape[0]
+                doc_seq_len = seq.shape[0]
 
-            total_chunks += doc_chunk_len
-            total_seqs += doc_seq_len
-            total_docs += 1
+                chunks_memmap[total_chunks:(total_chunks + doc_chunk_len)] = chunks.numpy()
+                seqs_memmap[total_seqs:(total_seqs + doc_seq_len)] = seq.numpy() + total_chunks
+                doc_ids_memmap[total_chunks:(total_chunks + doc_chunk_len)] = np.full((doc_chunk_len,), total_docs)
+
+                total_chunks += doc_chunk_len
+                total_seqs += doc_seq_len
+                total_docs += 1
 
     return dict(
         chunks = total_chunks,
