@@ -156,7 +156,7 @@ def text_folder_to_chunks_(
             print(f'processing {path}')
 
             file_text = path.read_text()
-            doc_iterator = [d for d in file_text.split('<|endoftext|>') if len(d) > 0]
+            doc_iterator = [d + '<|endoftext|>' for d in file_text.split('<|endoftext|>') if len(d) > 0]
 
             for doc_text in tqdm(doc_iterator):
                 chunks, seq = doc_text_to_chunks_and_seq_indices(
