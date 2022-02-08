@@ -388,7 +388,7 @@ def chunks_to_precalculated_knn_(
         chunk_size = chunk_size,
         chunk_memmap_path = chunk_memmap_path,
         index_file = index_file,
-        use_gpt = use_gpt
+        use_gpt = use_gpt,
         **index_kwargs
     )
 
