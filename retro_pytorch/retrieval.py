@@ -14,10 +14,10 @@ from retro_pytorch.utils import memmap, reset_folder_
 
 # constants
 
-SOS_ID = 101
-EOS_ID = 102
+# SOS_ID = 101
+EOS_ID = 50256
 BERT_MODEL_DIM = 768
-BERT_VOCAB_SIZE = 28996
+BERT_VOCAB_SIZE = 50257
 
 TMP_PATH = Path('./.tmp')
 INDEX_FOLDER_PATH = TMP_PATH / '.index'
@@ -47,17 +47,17 @@ MODEL = None
 TOKENIZER = None
 
 
-def model_name(use_gpt=False):
+def model_name(use_gpt=True):
     return 'gpt' if use_gpt else 'bert-base-cased'
 
 
-def get_tokenizer(use_gpt=False):
+def get_tokenizer(use_gpt=True):
     global TOKENIZER
     if not exists(TOKENIZER):
         TOKENIZER = torch.hub.load('huggingface/pytorch-transformers', 'tokenizer', model_name(use_gpt))
     return TOKENIZER
 
-def get_bert(use_gpt=False):
+def get_bert(use_gpt=True):
     global MODEL
     if not exists(MODEL):
         MODEL = torch.hub.load('huggingface/pytorch-transformers', 'model', model_name(use_gpt))
@@ -65,7 +65,7 @@ def get_bert(use_gpt=False):
 
 # tokenize
 
-def tokenize(texts, add_special_tokens = True, use_gpt=False):
+def tokenize(texts, add_special_tokens = True, use_gpt=True):
     if not isinstance(texts, (list, tuple)):
         texts = [texts]
 
@@ -89,7 +89,7 @@ def doc_text_to_chunks_and_seq_indices(
     chunk_size = 64,
     seq_len = 2048,
     pad_id = 0,
-    use_gpt = False
+    use_gpt=True
 ):
     assert (seq_len % chunk_size) == 0, 'sequence length must be divisible by chunk size'
 
@@ -190,7 +190,7 @@ def bert_embed(
     return_cls_repr = False,
     eps = 1e-8,
     pad_id = 0.,
-    use_gpt=False
+    use_gpt=True
 ):
     model = get_bert(use_gpt)
     mask = token_ids != pad_id
@@ -229,7 +229,7 @@ def chunks_to_embeddings_(
     batch_size = 16,
     use_cls_repr = False,
     pad_id = 0.,
-    use_gpt=False,
+    use_gpt=True,
 ):
     chunks_shape = (num_chunks, chunk_size + 1)
     embed_shape = (num_chunks, embed_dim)
@@ -242,8 +242,9 @@ def chunks_to_embeddings_(
 
             batch_chunk = torch.from_numpy(batch_chunk_npy)
 
-            cls_tokens = torch.full((batch_chunk.shape[0], 1), SOS_ID)
-            batch_chunk = torch.cat((cls_tokens, batch_chunk), dim = 1)
+            if not use_gpt:
+                cls_tokens = torch.full((batch_chunk.shape[0], 1), SOS_ID)
+                batch_chunk = torch.cat((cls_tokens, batch_chunk), dim = 1)
 
             batch_chunk = batch_chunk[:, :-1] # omit last token, the first token of the next chunk, used for autoregressive training
 
@@ -313,7 +314,7 @@ def chunks_to_index_and_embed(
     chunks_to_embeddings_batch_size = 16,
     embed_dim = BERT_MODEL_DIM,
     index_file = 'knn.index',
-    use_gpt = False
+    use_gpt=True
     **index_kwargs
 ):
     embedding_path = f'{chunk_memmap_path}.embedded'
@@ -361,7 +362,7 @@ def chunks_to_precalculated_knn_(
     num_extra_neighbors = 10,
     force_reprocess = False,
     index_file = 'knn.index',
-    use_gpt = False,
+    use_gpt=True,
     **index_kwargs
 ):
     chunk_path = Path(chunk_memmap_path)

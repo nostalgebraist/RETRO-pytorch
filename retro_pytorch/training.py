@@ -82,14 +82,16 @@ def knn_chunks_from_seq_chunks(
     num_chunks,
     chunk_size,
     chunks_memmap_path,
+    use_gpt=True
 ):
     b, device = seq_chunks.shape[0], seq_chunks.device
 
     # prepare last chunk with sos and eos tokens for BERT embed
 
-    ones = torch.ones((b, 1), dtype = torch.bool, device = device)
-    sos = ones * SOS_ID
-    eos = ones * EOS_ID
+    if not use_gpt:
+        ones = torch.ones((b, 1), dtype = torch.bool, device = device)
+        sos = ones * SOS_ID
+        eos = ones * EOS_ID
 
     seq_chunks = torch.cat((sos, seq_chunks, eos), dim = 1)
 
