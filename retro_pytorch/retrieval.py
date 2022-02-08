@@ -196,11 +196,12 @@ def bert_embed(
     pad_id = 0.,
     use_gpt=True
 ):
+    token_ids = token_ids.cuda()
     model = get_bert(use_gpt)
     mask = token_ids != pad_id
 
     outputs = model(
-        input_ids = token_ids.cuda(),
+        input_ids = token_ids,
         attention_mask = mask,
         output_hidden_states = True
     )
