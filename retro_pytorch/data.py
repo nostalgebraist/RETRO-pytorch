@@ -100,7 +100,7 @@ class RETRODataset(Dataset):
 
             seq_mask = np.cumsum(seq_tokens == self.eos_id, axis = 0)
             seq_mask = np.pad(seq_mask, (1, 0))[:-1] == 0.
-            seq_tokens = np.where(seq_mask, seq_tokens, 0.)
+            seq_tokens = np.where(seq_mask, seq_tokens, self.pad_id)
 
             # derive retrieved tokens
 
@@ -111,7 +111,8 @@ class RETRODataset(Dataset):
                 chunks_memmap,
                 add_continuations = self.add_continuations,
                 eos_id = self.eos_id,
-                num_chunks = self.num_chunks
+                num_chunks = self.num_chunks,
+                pad_id = self.pad_id
             )
 
         seq_tokens_torch = torch.from_numpy(seq_tokens).long()
