@@ -363,7 +363,7 @@ def chunks_to_precalculated_knn_(
     doc_ids_memmap_path,
     use_cls_repr = False,
     max_rows_per_file = 500,
-    chunks_to_embeddings_batch_size = 16,
+    chunks_to_embeddings_batch_size = 64,
     embed_dim = BERT_MODEL_DIM,
     num_extra_neighbors = 10,
     force_reprocess = False,
