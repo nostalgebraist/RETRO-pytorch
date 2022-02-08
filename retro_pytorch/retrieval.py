@@ -314,7 +314,7 @@ def chunks_to_index_and_embed(
     chunks_to_embeddings_batch_size = 16,
     embed_dim = BERT_MODEL_DIM,
     index_file = 'knn.index',
-    use_gpt=True
+    use_gpt=True,
     **index_kwargs
 ):
     embedding_path = f'{chunk_memmap_path}.embedded'
